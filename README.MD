@@ -1,4 +1,4 @@
-# Повтоярем базу
+# Повторяем базу
 
 # SOLID - https://en.wikipedia.org/wiki/SOLID
 
