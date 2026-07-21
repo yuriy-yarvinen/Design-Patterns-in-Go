@@ -72,6 +72,74 @@ func (b *HtmlBuilder) AddChildChild(childName, childText string) *HtmlBuilder {
 	return b
 }
 
+/// lecture 2 facets
+
+type Person struct {
+	StreetAddress, Postcode, City string
+	CompanyName, Position         string
+	AnnualIncome                  int
+}
+
+type PersonBuilder struct {
+	person *Person
+}
+
+func NewPersonBuilder() *PersonBuilder {
+	return &PersonBuilder{&Person{}}
+}
+func (it *PersonBuilder) Build() *Person {
+	return it.person
+}
+
+type PersonAddressBuilder struct {
+	PersonBuilder
+}
+type PersonJobBuilder struct {
+	PersonBuilder
+}
+
+func (it *PersonBuilder) Works() *PersonJobBuilder {
+	return &PersonJobBuilder{*it}
+}
+func (it *PersonBuilder) Lives() *PersonAddressBuilder {
+	return &PersonAddressBuilder{*it}
+}
+func (pjb *PersonJobBuilder) At(
+	companyName string) *PersonJobBuilder {
+	pjb.person.CompanyName = companyName
+	return pjb
+}
+
+func (pjb *PersonJobBuilder) AsA(
+	position string) *PersonJobBuilder {
+	pjb.person.Position = position
+	return pjb
+}
+
+func (pjb *PersonJobBuilder) Earning(
+	annualIncome int) *PersonJobBuilder {
+	pjb.person.AnnualIncome = annualIncome
+	return pjb
+}
+
+func (it *PersonAddressBuilder) At(
+	streetAddress string) *PersonAddressBuilder {
+	it.person.StreetAddress = streetAddress
+	return it
+}
+
+func (it *PersonAddressBuilder) In(
+	city string) *PersonAddressBuilder {
+	it.person.City = city
+	return it
+}
+
+func (it *PersonAddressBuilder) WithPostcode(
+	postcode string) *PersonAddressBuilder {
+	it.person.Postcode = postcode
+	return it
+}
+
 func main() {
 	sb := strings.Builder{}
 	sb.WriteString("<ul>")
@@ -94,4 +162,15 @@ func main() {
 		AddChildChild("span", "div")
 
 	fmt.Println(hb.String())
+
+	pb := NewPersonBuilder()
+	pb.
+		Works().
+		At("Factory").
+		AsA("Developer").
+		Lives().
+		At("Spb").
+		In("Test")
+	Person := pb.Build()
+	fmt.Println(Person)
 }
