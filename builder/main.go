@@ -140,6 +140,90 @@ func (it *PersonAddressBuilder) WithPostcode(
 	return it
 }
 
+// lecture 3 builder Parameter
+
+type email struct {
+	from, to, subject, body string
+}
+
+type EmailBuilder struct {
+	email email
+}
+
+func (eb *EmailBuilder) From(from string) *EmailBuilder {
+	if !strings.Contains(from, "@") {
+		panic("not email, no @ in from")
+	}
+
+	eb.email.from = from
+	return eb
+}
+func (eb *EmailBuilder) To(to string) *EmailBuilder {
+	if !strings.Contains(to, "@") {
+		panic("not email, no @ in to")
+	}
+	eb.email.to = to
+	return eb
+}
+func (eb *EmailBuilder) Subject(subject string) *EmailBuilder {
+	eb.email.subject = subject
+	return eb
+}
+func (eb *EmailBuilder) Body(body string) *EmailBuilder {
+	eb.email.body = body
+	return eb
+}
+
+type build func(*EmailBuilder)
+
+func SendEmailImplementation(email *email) {
+	fmt.Println(email)
+}
+
+func SendEmailAction(action build) {
+	builder := EmailBuilder{}
+	action(&builder)
+	SendEmailImplementation(&builder.email)
+}
+
+// lecture 4 build with actions
+
+type PersonLc4 struct {
+	firstname, lastname, address string
+}
+
+type PersonLc4Mod func(*PersonLc4)
+
+type PersonLc4Builder struct {
+	actions []PersonLc4Mod
+}
+
+func (pb *PersonLc4Builder) SetFirstName(firstname string) *PersonLc4Builder {
+	pb.actions = append(pb.actions, func(pl *PersonLc4) {
+		pl.firstname = firstname
+	})
+	return pb
+}
+func (pb *PersonLc4Builder) SetLastName(lastname string) *PersonLc4Builder {
+	pb.actions = append(pb.actions, func(pl *PersonLc4) {
+		pl.lastname = lastname
+	})
+	return pb
+}
+func (pb *PersonLc4Builder) SetAddress(address string) *PersonLc4Builder {
+	pb.actions = append(pb.actions, func(pl *PersonLc4) {
+		pl.address = address
+	})
+	return pb
+}
+func (pb *PersonLc4Builder) Build() *PersonLc4 {
+	p := PersonLc4{}
+	for _, action := range pb.actions {
+		action(&p)
+	}
+	return &p
+}
+
 func main() {
 	sb := strings.Builder{}
 	sb.WriteString("<ul>")
@@ -173,4 +257,16 @@ func main() {
 		In("Test")
 	Person := pb.Build()
 	fmt.Println(Person)
+
+	SendEmailAction(func(eb *EmailBuilder) {
+		eb.From("test@test.ru").
+			To("test2@test.ru").
+			Subject("test").
+			Body("body")
+	})
+
+	pb2 := PersonLc4Builder{}
+	pb2.SetAddress("address").SetFirstName("FName").SetLastName("Lname").SetFirstName("RewriteFName")
+	person := pb2.Build()
+	fmt.Println(person)
 }
